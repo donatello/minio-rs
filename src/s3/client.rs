@@ -1890,31 +1890,6 @@ impl Client {
         StatObjectResponse::new(resp.headers(), &region, args.bucket, args.object)
     }
 
-    /// Executes [UploadPart](https://docs.aws.amazon.com/AmazonS3/latest/API/API_UploadPart.html) S3 API
-    pub async fn upload_part_old(
-        &self,
-        args: &UploadPartArgs<'_>,
-    ) -> Result<UploadPartResponse, Error> {
-        let mut query_params = Multimap::new();
-        query_params.insert(String::from("partNumber"), args.part_number.to_string());
-        query_params.insert(String::from("uploadId"), args.upload_id.to_string());
-
-        let mut poa_args = PutObjectApiArgs::new(args.bucket, args.object, args.data)?;
-        poa_args.query_params = Some(&query_params);
-
-        poa_args.extra_headers = args.extra_headers;
-        poa_args.extra_query_params = args.extra_query_params;
-        poa_args.region = args.region;
-        poa_args.headers = args.headers;
-        poa_args.user_metadata = args.user_metadata;
-        poa_args.sse = args.sse;
-        poa_args.tags = args.tags;
-        poa_args.retention = args.retention;
-        poa_args.legal_hold = args.legal_hold;
-
-        self.put_object_api(&poa_args).await
-    }
-
     /// Executes [UploadPartCopy](https://docs.aws.amazon.com/AmazonS3/latest/API/API_UploadPartCopy.html) S3 API
     pub async fn upload_part_copy(
         &self,

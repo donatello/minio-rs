@@ -173,9 +173,6 @@ pub type CopyObjectResponse = PutObjectApiResponse;
 /// Response of [compose_object()](crate::s3::client::Client::compose_object) API
 pub type ComposeObjectResponse = PutObjectApiResponse;
 
-/// Response of [upload_object()](crate::s3::client::Client::upload_object) API
-pub type UploadObjectResponse = PutObjectApiResponse;
-
 #[derive(Debug)]
 /// Response of [stat_object()](crate::s3::client::Client::stat_object) API
 pub struct StatObjectResponse {
@@ -669,14 +666,4 @@ pub struct GetPresignedObjectUrlResponse {
     pub object_name: String,
     pub version_id: Option<String>,
     pub url: String,
-}
-
-#[derive(Clone, Debug)]
-/// Response of [download_object()](crate::s3::client::Client::download_object) API
-pub struct DownloadObjectResponse {
-    pub headers: HeaderMap,
-    pub region: String,
-    pub bucket_name: String,
-    pub object_name: String,
-    pub version_id: Option<String>,
 }
