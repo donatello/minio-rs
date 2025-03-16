@@ -215,38 +215,6 @@ impl<'a> ObjectVersionArgs<'a> {
 pub type RemoveObjectArgs<'a> = ObjectVersionArgs<'a>;
 
 #[derive(Clone, Debug, Default)]
-/// Argument for [make_bucket()](crate::s3::client::Client::make_bucket) API
-pub struct MakeBucketArgs<'a> {
-    pub extra_headers: Option<&'a Multimap>,
-    pub extra_query_params: Option<&'a Multimap>,
-    pub region: Option<&'a str>,
-    pub bucket: &'a str,
-    pub object_lock: bool,
-}
-
-impl<'a> MakeBucketArgs<'a> {
-    /// Returns argument for [make_bucket()](crate::s3::client::Client::make_bucket) API with given bucket name
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use minio::s3::args::*;
-    /// let args = MakeBucketArgs::new("my-bucket").unwrap();
-    /// ```
-    pub fn new(bucket_name: &'a str) -> Result<MakeBucketArgs<'a>, Error> {
-        check_bucket_name(bucket_name, true)?;
-
-        Ok(MakeBucketArgs {
-            extra_headers: None,
-            extra_query_params: None,
-            region: None,
-            bucket: bucket_name,
-            object_lock: false,
-        })
-    }
-}
-
-#[derive(Clone, Debug, Default)]
 /// Argument for [put_object_api()](crate::s3::client::Client::put_object_api) S3 API
 pub struct PutObjectApiArgs<'a> {
     pub extra_headers: Option<&'a Multimap>,

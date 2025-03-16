@@ -1,5 +1,5 @@
 // MinIO Rust Library for Amazon S3 Compatible Cloud Storage
-// Copyright 2024 MinIO, Inc.
+// Copyright 2025 MinIO, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ mod get_object;
 mod list_buckets;
 mod list_objects;
 mod listen_bucket_notification;
+mod make_bucket;
 mod object_content;
 mod object_prompt;
 mod put_object;
@@ -63,6 +64,7 @@ pub use get_object::*;
 pub use list_buckets::*;
 pub use list_objects::*;
 pub use listen_bucket_notification::*;
+pub use make_bucket::*;
 pub use object_content::*;
 pub use object_prompt::*;
 pub use put_object::*;

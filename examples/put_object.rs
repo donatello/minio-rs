@@ -18,10 +18,8 @@ use std::path::PathBuf;
 use clap::Parser;
 use log::info;
 use minio::s3::{
-    args::{BucketExistsArgs, MakeBucketArgs},
-    builders::ObjectContent,
-    client::ClientBuilder,
-    creds::StaticProvider,
+    args::BucketExistsArgs, builders::ObjectContent, client::ClientBuilder, creds::StaticProvider,
+    types::S3Api as _,
 };
 
 /// Upload a file to the given bucket and object path on the MinIO Play server.
@@ -55,10 +53,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .unwrap();
 
     if !exists {
-        client
-            .make_bucket(&MakeBucketArgs::new(&args.bucket).unwrap())
-            .await
-            .unwrap();
+        client.make_bucket(&args.bucket).send().await.unwrap();
     }
 
     let content = ObjectContent::from(args.file.as_path());

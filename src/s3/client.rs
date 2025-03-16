@@ -59,6 +59,7 @@ mod get_bucket_versioning;
 mod get_object;
 mod list_objects;
 mod listen_bucket_notification;
+mod make_bucket;
 mod object_prompt;
 mod put_object;
 mod remove_objects;
@@ -180,9 +181,10 @@ impl ClientBuilder {
 #[derive(Clone, Debug, Default)]
 pub struct Client {
     client: reqwest::Client,
-    base_url: BaseUrl,
+    pub(crate) base_url: BaseUrl,
     provider: Option<Arc<Box<(dyn Provider + Send + Sync + 'static)>>>,
-    region_map: DashMap<String, String>,
+    // bucket to region mapping
+    pub(crate) region_map: DashMap<String, String>,
 }
 
 impl Client {
@@ -581,29 +583,36 @@ impl Client {
         bucket_name: &str,
         region: Option<&str>,
     ) -> Result<String, Error> {
-        if !region.is_none_or(|v| v.is_empty()) {
-            if !self.base_url.region.is_empty() && self.base_url.region != *region.unwrap() {
+        // If a region is provided we use that.
+        let given_region = region.unwrap_or("");
+        if !given_region.is_empty() {
+            // If base url has a non-empty region it must match.
+            if !self.base_url.region.is_empty() && self.base_url.region != given_region {
                 return Err(Error::RegionMismatch(
                     self.base_url.region.clone(),
-                    region.unwrap().to_string(),
+                    given_region.to_string(),
                 ));
             }
 
-            return Ok(region.unwrap().to_string());
+            return Ok(given_region.to_string());
         }
 
+        // So `region` is empty. If base_url is non-empty we use that.
         if !self.base_url.region.is_empty() {
-            return Ok(self.base_url.region.clone());
+            return Ok(self.base_url.region.to_string());
         }
 
+        // FIXME: Why do we need this case?
         if bucket_name.is_empty() || self.provider.is_none() {
             return Ok(String::from("us-east-1"));
         }
 
+        // Check if the bucket's region is cached.
         if let Some(v) = self.region_map.get(bucket_name) {
             return Ok((*v).to_string());
         }
 
+        // Do GetBucketLocation call to find the bucket's region.
         let mut headers = Multimap::new();
         let mut query_params = Multimap::new();
         query_params.insert(String::from("location"), String::new());
@@ -627,8 +636,10 @@ impl Client {
             location = String::from("us-east-1");
         }
 
+        // Store the bucket's region in the cache.
         self.region_map
             .insert(bucket_name.to_string(), location.clone());
+
         Ok(location)
     }
 
@@ -1501,74 +1512,6 @@ impl Client {
 
     pub fn list_buckets(&self) -> ListBuckets {
         ListBuckets::new().client(self)
-    }
-
-    pub async fn make_bucket(
-        &self,
-        args: &MakeBucketArgs<'_>,
-    ) -> Result<MakeBucketResponse, Error> {
-        let mut region = "us-east-1";
-        if let Some(r) = &args.region {
-            if !self.base_url.region.is_empty() {
-                if self.base_url.region != *r {
-                    return Err(Error::RegionMismatch(
-                        self.base_url.region.clone(),
-                        r.to_string(),
-                    ));
-                }
-                region = r;
-            }
-        }
-
-        let mut headers = Multimap::new();
-        if let Some(v) = &args.extra_headers {
-            merge(&mut headers, v);
-        };
-
-        if args.object_lock {
-            headers.insert(
-                String::from("x-amz-bucket-object-lock-enabled"),
-                String::from("true"),
-            );
-        }
-
-        let mut query_params = &Multimap::new();
-        if let Some(v) = &args.extra_query_params {
-            query_params = v;
-        }
-
-        let data = match region {
-            "us-east-1" => String::new(),
-            _ => format!(
-                "<CreateBucketConfiguration><LocationConstraint>{}</LocationConstraint></CreateBucketConfiguration>",
-                region
-            ),
-        };
-
-        let body = match data.is_empty() {
-            true => None,
-            false => Some(data.into()),
-        };
-
-        let resp = self
-            .execute(
-                Method::PUT,
-                region,
-                &mut headers,
-                query_params,
-                Some(args.bucket),
-                None,
-                body,
-            )
-            .await?;
-        self.region_map
-            .insert(args.bucket.to_string(), region.to_string());
-
-        Ok(MakeBucketResponse {
-            headers: resp.headers().clone(),
-            region: region.to_string(),
-            bucket: args.bucket.to_string(),
-        })
     }
 
     /// Executes [PutObject](https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html) S3 API

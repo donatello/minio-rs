@@ -15,6 +15,7 @@
 
 use async_std::task;
 use bytes::Bytes;
+use minio::s3::types::S3Api as _;
 use rand::SeedableRng;
 use rand::distributions::{Alphanumeric, DistString};
 use rand::prelude::SmallRng;
@@ -254,10 +255,7 @@ impl TestContext {
 #[allow(dead_code)]
 pub async fn create_bucket_helper(ctx: &TestContext) -> (String, CleanupGuard) {
     let bucket_name = rand_bucket_name();
-    ctx.client
-        .make_bucket(&MakeBucketArgs::new(&bucket_name).unwrap())
-        .await
-        .unwrap();
+    ctx.client.make_bucket(&bucket_name).send().await.unwrap();
     let guard = CleanupGuard::new(ctx, &bucket_name);
     (bucket_name, guard)
 }

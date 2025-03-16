@@ -45,6 +45,7 @@ mod get_object;
 mod list_buckets;
 pub(crate) mod list_objects;
 mod listen_bucket_notification;
+mod make_bucket;
 mod object_prompt;
 mod put_object;
 mod remove_objects;
@@ -73,6 +74,7 @@ pub use get_object::GetObjectResponse;
 pub use list_buckets::ListBucketsResponse;
 pub use list_objects::ListObjectsResponse;
 pub use listen_bucket_notification::ListenBucketNotificationResponse;
+pub use make_bucket::MakeBucketResponse;
 pub use object_prompt::ObjectPromptResponse;
 pub use put_object::{
     AbortMultipartUploadResponse2, CompleteMultipartUploadResponse2,
@@ -95,9 +97,6 @@ pub struct BucketResponse {
     pub region: String,
     pub bucket: String,
 }
-
-/// Response of [make_bucket()](crate::s3::client::Client::make_bucket) API
-pub type MakeBucketResponse = BucketResponse;
 
 /// Response of [remove_bucket()](crate::s3::client::Client::remove_bucket) API
 pub type RemoveBucketResponse = BucketResponse;

@@ -1,6 +1,7 @@
-use minio::s3::args::{BucketExistsArgs, MakeBucketArgs};
+use minio::s3::args::BucketExistsArgs;
 use minio::s3::creds::StaticProvider;
 use minio::s3::http::BaseUrl;
+use minio::s3::types::S3Api as _;
 use minio::s3::{Client, ClientBuilder};
 
 #[allow(dead_code)]
@@ -31,10 +32,7 @@ pub async fn create_bucket_if_not_exists(
 
     // Make 'bucket_name' bucket if not exist.
     if !exists {
-        client
-            .make_bucket(&MakeBucketArgs::new(bucket_name).unwrap())
-            .await
-            .unwrap();
+        client.make_bucket(bucket_name).send().await.unwrap();
     };
     Ok(())
 }

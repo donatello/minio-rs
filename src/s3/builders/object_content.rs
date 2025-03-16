@@ -449,3 +449,19 @@ impl From<Bytes> for SegmentedBytes {
         sb
     }
 }
+
+impl From<&'static str> for SegmentedBytes {
+    fn from(s: &'static str) -> Self {
+        let mut sb = SegmentedBytes::new();
+        sb.append(Bytes::from(s));
+        sb
+    }
+}
+
+impl From<String> for SegmentedBytes {
+    fn from(s: String) -> Self {
+        let mut sb = SegmentedBytes::new();
+        sb.append(Bytes::from(s));
+        sb
+    }
+}
